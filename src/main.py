@@ -1,3 +1,4 @@
+import asyncio
 import sys
 
 import pygame
@@ -26,7 +27,7 @@ font_large = pygame.font.Font(None, 70)
 font_small = pygame.font.Font(None, 36)
 
 
-def quit_game():
+async def quit_game():
     pygame.quit()
     sys.exit()
 
@@ -118,14 +119,14 @@ class Game:
         self.score_a, self.score_b = 0, 0
         self.reward = 0
 
-    def play(self):
+    async def play(self):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    quit_game()
+                    await quit_game()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        main_menu()
+                        await main_menu()
 
             self.paddle_b.simple_ai(self.ball.rect.y, SIMPLE_AI_SPEED)
 
@@ -168,20 +169,21 @@ class Game:
 
             pygame.display.flip()
             self.clock.tick(FPS)
+            await asyncio.sleep(0)
 
             if self.score_a == MAX_SCORE or self.score_b == MAX_SCORE:
-                main_menu()
+                await main_menu()
 
 
-def game():
+async def game():
     player_a = Paddle(COLOR_A, PDL_WIDTH, PDL_HEIGHT, "A")
     player_b = Paddle(COLOR_B, PDL_WIDTH, PDL_HEIGHT, "B")
     ball = Ball(WHITE, 2 * RADIUS, 2 * RADIUS, RADIUS)
     g = Game(player_a, player_b, ball)
-    g.play()
+    await g.play()
 
 
-def main_menu():
+async def main_menu():
     buttons = []
     button_width = 200
     button_height = 50
@@ -208,19 +210,20 @@ def main_menu():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                quit_game()
+                await quit_game()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if button_play.collidepoint(mx, my):
-                    game()
+                    await game()
                 if button_exit.collidepoint(mx, my):
-                    quit_game()
+                    await quit_game()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    quit_game()
+                    await quit_game()
                 if event.key == pygame.K_g:
-                    game()
+                    await game()
         pygame.display.update()
+        await asyncio.sleep(0)
 
 
 if __name__ == "__main__":
-    main_menu()
+    asyncio.run(main_menu())
